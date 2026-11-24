@@ -656,7 +656,7 @@
           <button class="btn secundario" id="csv">Exportar a CSV (sin cifrar)</button>
           <button class="btn peligro" id="borrar">Borrar todos los datos de este teléfono</button>
         </div>
-        <p class="tenue centrado">Patrimonio · versión de prueba 1.2<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
+        <p class="tenue centrado">Patrimonio · versión de prueba 1.3<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
       </div>`;
     conectarCandado();
     $("#guardar-monedas").onclick = async () => {
@@ -686,7 +686,7 @@
     const archivo = new File([contenido], nombre, { type: tipo });
     if (navigator.canShare?.({ files: [archivo] })) {
       try {
-        await navigator.share({ files: [archivo], title: nombre });
+        await navigator.share({ files: [archivo] }); // sin título: Drive lo guardaría como un .txt extra
         return true;
       } catch (e) {
         if (e.name === "AbortError") return false;

@@ -1,6 +1,6 @@
 // Guarda la app en el teléfono para que abra sin internet.
 // Solo guarda los archivos de la app, nunca tus datos (esos viven cifrados en IndexedDB).
-const VERSION = "patrimonio-v3";
+const VERSION = "patrimonio-v4";
 const ARCHIVOS = [
   "./",
   "./index.html",
