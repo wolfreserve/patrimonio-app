@@ -223,34 +223,80 @@
   };
 
   // ───────────────────────── Pantalla de bloqueo ─────────────────────────
+  // Teclado numérico propio: evita un error de iOS que a veces no muestra el teclado
+  // en apps instaladas en la pantalla de inicio.
+  const tecladoHTML = () => `
+    <div class="teclado" id="teclado">
+      ${["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => `<button class="tecla" data-d="${d}">${d}</button>`).join("")}
+      <button class="tecla tenue" data-d="borrar" aria-label="Borrar">⌫</button>
+      <button class="tecla" data-d="0">0</button>
+      <button class="tecla tenue" data-d="limpiar" aria-label="Limpiar">C</button>
+    </div>`;
+  function conectarTeclado(campo) {
+    $$(".tecla").forEach(
+      (t) =>
+        (t.onclick = () => {
+          const c = $(campo);
+          if (t.dataset.d === "borrar") c.value = c.value.slice(0, -1);
+          else if (t.dataset.d === "limpiar") c.value = "";
+          else if (c.value.length < 64) c.value += t.dataset.d;
+          $("#err").textContent = "";
+        }),
+    );
+  }
+  // Cambia el campo de solo lectura por uno nuevo que sí acepta el teclado del sistema.
+  function cambiarATecladoSistema(id, autocompletar) {
+    const viejo = $(`#${id}`);
+    const nuevoCampo = document.createElement("input");
+    Object.assign(nuevoCampo, { id, type: "password", autocomplete: autocompletar, value: "" });
+    viejo.replaceWith(nuevoCampo);
+    $("#teclado")?.classList.add("oculto");
+    $("#cambiar-teclado")?.classList.add("oculto");
+    $("#err").textContent = "Toca el campo y escribe tu código.";
+  }
+
   async function pintarBloqueo() {
     document.querySelector(".nav")?.remove();
     const existe = await almacen.obtener("boveda");
     const app = $("#app");
     if (!existe) {
+      let primero = null;
       app.innerHTML = `
         <div class="bloqueo">
           <img src="iconos/icono-192.png" alt="" />
           <h1>Patrimonio</h1>
-          <p class="tenue">Crea un código para proteger tus datos. Todo se guarda cifrado en este teléfono.</p>
-          <label for="c1">Código (mínimo 6 caracteres)</label>
-          <input id="c1" type="password" autocomplete="new-password" />
-          <label for="c2">Repite el código</label>
-          <input id="c2" type="password" autocomplete="new-password" />
-          <div class="nota"><strong>Importante:</strong> si olvidas este código no hay forma de recuperar los datos. Nadie, ni yo, puede abrirlos sin él.</div>
+          <p class="tenue" id="instruccion">Crea un código de al menos 6 números. Protege tus datos, que se guardan cifrados en este teléfono.</p>
+          <input id="c1" type="password" autocomplete="off" readonly aria-label="Código" />
           <div class="error" id="err"></div>
-          <button class="btn" id="crear">Crear y entrar</button>
+          ${tecladoHTML()}
+          <button class="btn" id="crear">Continuar</button>
+          <button class="btn secundario" id="cambiar-teclado">Prefiero un código con letras</button>
+          <div class="nota"><strong>Importante:</strong> si olvidas este código no hay forma de recuperar los datos. Nadie puede abrirlos sin él.</div>
           <button class="btn secundario" id="restaurar">Restaurar desde un respaldo</button>
           <input type="file" id="archivo" accept="application/json,.json" class="oculto" />
         </div>`;
+      conectarTeclado("#c1");
+      $("#cambiar-teclado").onclick = () => cambiarATecladoSistema("c1", "new-password");
       $("#crear").onclick = async () => {
-        const a = $("#c1").value;
-        const b = $("#c2").value;
-        if (a.length < 6) return ($("#err").textContent = "El código debe tener al menos 6 caracteres.");
-        if (a !== b) return ($("#err").textContent = "Los códigos no coinciden.");
+        const valor = $("#c1").value;
+        if (primero === null) {
+          if (valor.length < 6) return ($("#err").textContent = "El código debe tener al menos 6 caracteres.");
+          primero = valor;
+          $("#c1").value = "";
+          $("#instruccion").textContent = "Escribe el mismo código otra vez para confirmarlo.";
+          $("#crear").textContent = "Crear y entrar";
+          return;
+        }
+        if (valor !== primero) {
+          primero = null;
+          $("#c1").value = "";
+          $("#instruccion").textContent = "Crea un código de al menos 6 números.";
+          $("#crear").textContent = "Continuar";
+          return ($("#err").textContent = "Los códigos no coinciden. Empieza de nuevo.");
+        }
         $("#crear").disabled = true;
         $("#crear").textContent = "Protegiendo…";
-        await crearBoveda(a);
+        await crearBoveda(valor);
         pedirAlmacenamientoPersistente();
         entrar();
       };
@@ -263,35 +309,20 @@
         <img src="iconos/icono-192.png" alt="" />
         <h1>Patrimonio</h1>
         <p class="tenue">Escribe tu código para abrir.</p>
-        <label for="cod">Código</label>
-        <input id="cod" type="password" autocomplete="off" readonly />
+        <input id="cod" type="password" autocomplete="off" readonly aria-label="Código" />
         <div class="error" id="err"></div>
-        <div class="teclado" id="teclado">
-          ${["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => `<button class="tecla" data-d="${d}">${d}</button>`).join("")}
-          <button class="tecla tenue" data-d="borrar" aria-label="Borrar">⌫</button>
-          <button class="tecla" data-d="0">0</button>
-          <button class="tecla tenue" data-d="limpiar" aria-label="Limpiar">C</button>
-        </div>
+        ${tecladoHTML()}
         <button class="btn" id="abrir">Abrir</button>
-        <button class="btn secundario" id="usar-teclado">Mi código tiene letras: usar teclado</button>
+        <button class="btn secundario" id="cambiar-teclado">Mi código tiene letras: usar teclado</button>
+        <button class="btn peligro" id="empezar">Olvidé mi código: empezar de cero</button>
       </div>`;
-    // Teclado propio: evita un error de iOS que no muestra el teclado en apps de pantalla de inicio.
-    $$(".tecla").forEach(
-      (t) =>
-        (t.onclick = () => {
-          const c = $("#cod");
-          if (t.dataset.d === "borrar") c.value = c.value.slice(0, -1);
-          else if (t.dataset.d === "limpiar") c.value = "";
-          else if (c.value.length < 64) c.value += t.dataset.d;
-          $("#err").textContent = "";
-        }),
-    );
-    $("#usar-teclado").onclick = () => {
-      const c = $("#cod");
-      c.readOnly = false;
-      $("#teclado").classList.add("oculto");
-      $("#usar-teclado").classList.add("oculto");
-      c.focus();
+    conectarTeclado("#cod");
+    $("#cambiar-teclado").onclick = () => cambiarATecladoSistema("cod", "current-password");
+    $("#empezar").onclick = async () => {
+      if (!confirm("Sin el código no se pueden abrir los datos guardados. Empezar de cero BORRA todo lo de este teléfono. ¿Continuar?")) return;
+      if (!confirm("Última confirmación: ¿borrar todo y crear un código nuevo? Si tienes un respaldo podrás restaurarlo con su código.")) return;
+      await almacen.borrar("boveda");
+      pintarBloqueo();
     };
     const intentar = async () => {
       const ahora = Date.now();
@@ -625,7 +656,7 @@
           <button class="btn secundario" id="csv">Exportar a CSV (sin cifrar)</button>
           <button class="btn peligro" id="borrar">Borrar todos los datos de este teléfono</button>
         </div>
-        <p class="tenue centrado">Patrimonio · versión de prueba 1.1<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
+        <p class="tenue centrado">Patrimonio · versión de prueba 1.2<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
       </div>`;
     conectarCandado();
     $("#guardar-monedas").onclick = async () => {
