@@ -264,10 +264,35 @@
         <h1>Patrimonio</h1>
         <p class="tenue">Escribe tu código para abrir.</p>
         <label for="cod">Código</label>
-        <input id="cod" type="password" autocomplete="current-password" />
+        <input id="cod" type="password" autocomplete="off" readonly />
         <div class="error" id="err"></div>
+        <div class="teclado" id="teclado">
+          ${["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => `<button class="tecla" data-d="${d}">${d}</button>`).join("")}
+          <button class="tecla tenue" data-d="borrar" aria-label="Borrar">⌫</button>
+          <button class="tecla" data-d="0">0</button>
+          <button class="tecla tenue" data-d="limpiar" aria-label="Limpiar">C</button>
+        </div>
         <button class="btn" id="abrir">Abrir</button>
+        <button class="btn secundario" id="usar-teclado">Mi código tiene letras: usar teclado</button>
       </div>`;
+    // Teclado propio: evita un error de iOS que no muestra el teclado en apps de pantalla de inicio.
+    $$(".tecla").forEach(
+      (t) =>
+        (t.onclick = () => {
+          const c = $("#cod");
+          if (t.dataset.d === "borrar") c.value = c.value.slice(0, -1);
+          else if (t.dataset.d === "limpiar") c.value = "";
+          else if (c.value.length < 64) c.value += t.dataset.d;
+          $("#err").textContent = "";
+        }),
+    );
+    $("#usar-teclado").onclick = () => {
+      const c = $("#cod");
+      c.readOnly = false;
+      $("#teclado").classList.add("oculto");
+      $("#usar-teclado").classList.add("oculto");
+      c.focus();
+    };
     const intentar = async () => {
       const ahora = Date.now();
       if (ahora < esperaHasta) {
@@ -600,7 +625,7 @@
           <button class="btn secundario" id="csv">Exportar a CSV (sin cifrar)</button>
           <button class="btn peligro" id="borrar">Borrar todos los datos de este teléfono</button>
         </div>
-        <p class="tenue centrado">Patrimonio · versión de prueba 1.0<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
+        <p class="tenue centrado">Patrimonio · versión de prueba 1.1<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
       </div>`;
     conectarCandado();
     $("#guardar-monedas").onclick = async () => {

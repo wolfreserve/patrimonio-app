@@ -127,3 +127,11 @@ input:focus, select:focus { border-color: var(--acento); }
 body.privado #app { filter: blur(24px); }
 .separado { margin-top: 16px; }
 .centrado { text-align: center; }
+
+/* Teclado numérico propio */
+.teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 4px; }
+.tecla {
+  height: 60px; border-radius: 14px; border: 1px solid var(--borde); background: var(--tarjeta);
+  font-size: 26px; font-weight: 500; cursor: pointer; touch-action: manipulation;
+}
+.tecla:active { background: var(--tarjeta-2); }
