@@ -12,20 +12,169 @@
   const DIAS_RECORDAR_RESPALDO = 7;
 
   const TIPOS = {
-    efectivo: { nombre: "Efectivo y bancos", clase: "activo" },
-    inversiones: { nombre: "Inversiones", clase: "activo" },
-    retiro: { nombre: "Retiro", clase: "activo" },
-    cripto: { nombre: "Cripto", clase: "activo" },
-    inmuebles: { nombre: "Inmuebles", clase: "activo" },
-    vehiculos: { nombre: "Vehículos", clase: "activo" },
-    empresas: { nombre: "Empresas", clase: "activo" },
-    otros_activos: { nombre: "Otros activos", clase: "activo" },
-    tarjetas: { nombre: "Tarjetas de crédito", clase: "pasivo" },
-    hipotecas: { nombre: "Hipotecas", clase: "pasivo" },
-    prestamos: { nombre: "Préstamos", clase: "pasivo" },
-    otras_deudas: { nombre: "Otras deudas", clase: "pasivo" },
+    efectivo: { clase: "activo" },
+    inversiones: { clase: "activo" },
+    retiro: { clase: "activo" },
+    cripto: { clase: "activo" },
+    inmuebles: { clase: "activo" },
+    vehiculos: { clase: "activo" },
+    empresas: { clase: "activo" },
+    otros_activos: { clase: "activo" },
+    tarjetas: { clase: "pasivo" },
+    hipotecas: { clase: "pasivo" },
+    prestamos: { clase: "pasivo" },
+    otras_deudas: { clase: "pasivo" },
   };
   const MONEDAS = ["USD", "COP"];
+
+  // ───────────────────────── Idiomas ─────────────────────────
+  // Inglés por defecto. La preferencia no es un dato sensible: se guarda sin cifrar
+  // para poder mostrar la pantalla de bloqueo en el idioma correcto.
+  const TEXTOS = {
+    en: {
+      locale: "en-US",
+      "tipo.efectivo": "Cash & banks", "tipo.inversiones": "Investments", "tipo.retiro": "Retirement",
+      "tipo.cripto": "Crypto", "tipo.inmuebles": "Real estate", "tipo.vehiculos": "Vehicles",
+      "tipo.empresas": "Businesses", "tipo.otros_activos": "Other assets", "tipo.tarjetas": "Credit cards",
+      "tipo.hipotecas": "Mortgages", "tipo.prestamos": "Loans", "tipo.otras_deudas": "Other debts",
+      "clase.activo": "asset", "clase.pasivo": "liability",
+      borrar: "Delete", limpiar: "Clear", codigo: "Code",
+      tocaCampo: "Tap the field and type your code.",
+      crearInstr: "Create a code of at least 6 digits. It protects your data, which is stored encrypted on this phone.",
+      continuar: "Continue", preferirLetras: "I prefer a code with letters",
+      importante: "Important:", avisoOlvido: "if you forget this code there is no way to recover your data. Nobody can open it without it.",
+      restaurarDesde: "Restore from a backup", minimo6: "The code must be at least 6 characters.",
+      repetirInstr: "Type the same code again to confirm it.", crearEntrar: "Create and enter",
+      crearInstrCorta: "Create a code of at least 6 digits.", noCoinciden: "The codes don't match. Start over.",
+      protegiendo: "Protecting…", abrirInstr: "Enter your code to open.", abrir: "Open",
+      tieneLetras: "My code has letters: use keyboard", olvide: "I forgot my code: start over",
+      confirmaOlvido1: "Without the code, saved data can't be opened. Starting over DELETES everything on this phone. Continue?",
+      confirmaOlvido2: "Final confirmation: delete everything and create a new code? If you have a backup you can restore it with its code.",
+      espera: "Wait {s} seconds.", abriendo: "Opening…", incorrecto: "Incorrect code.",
+      resumen: "Summary", cuentas: "Accounts", ajustes: "Settings", bloquear: "Lock",
+      desde: "since {f}", sinRespaldoN: "More than {n} days without a backup · Back up now",
+      patrimonioNeto: "Net worth", graficaVacia: "The chart appears once you record values on at least two dates.",
+      activos: "Assets", deudas: "Debts", distribucion: "Asset allocation",
+      sinCuentas: "You don't have any accounts yet.", primeraCuenta: "Add my first account",
+      graficaAria: "Net worth over time", min: "Min.", max: "Max.",
+      actualizado: "Updated {f}", sinValor: "No value",
+      cuentasVacio: "Add your accounts, investments, properties and debts with the + button.",
+      agregarCuenta: "Add account", editarCuenta: "Edit account", nuevaCuenta: "New account",
+      nombre: "Name", ejemploNombre: "E.g. Chase savings, House, Tesla", tipo: "Type", moneda: "Currency",
+      valorActual: "Current value", fecha: "Date", notaDeudas: "For debts, enter the balance you owe as a positive number.",
+      guardar: "Save", agregar: "Add", cancelar: "Cancel", escribeNombre: "Enter a name.", valorInvalido: "Invalid value.",
+      cuentaActualizada: "Account updated", cuentaAgregada: "Account added",
+      nuevoValor: "New value", actualizarValor: "Update value", historial: "History", borrarRegistro: "Delete entry",
+      eliminarCuenta: "Delete account", escribeValor: "Enter a valid value.", valorActualizado: "Value updated",
+      confirmaBorrarRegistro: "Delete the entry from {f}?", confirmaEliminar: 'Delete "{n}" and all its history?',
+      cuentaEliminada: "Account deleted",
+      monedas: "Currencies", monedaPrincipal: "Main currency", tasa: "Colombian pesos per 1 US dollar",
+      respaldo: "Backup", ultimoRespaldo: "Last backup: {f}", sinRespaldo: "You haven't made a backup yet.",
+      notaRespaldo: "The backup is encrypted with your code. Save it to Google Drive from the Share menu.",
+      respaldarAhora: "Back up now", restaurar: "Restore from backup", seguridad: "Security",
+      cambiarCodigo: "Change code", exportarCSV: "Export to CSV (not encrypted)",
+      borrarTodo: "Delete all data on this phone", idioma: "Language",
+      pie: "Patrimonio · test version {v}<br/>Your data never leaves this phone except in backups you make.",
+      tasaInvalida: "Invalid rate", guardado: "Saved",
+      confirmaBorrarTodo: "This deletes EVERYTHING on this phone. Did you make a backup?",
+      escribeBORRAR: "Type DELETE to confirm", palabraBorrar: "DELETE",
+      respaldoListo: "Backup ready", noEsRespaldo: "That file is not a Patrimonio backup",
+      restaurarTitulo: "Restore backup", restaurarInstr: "Backup from {f}. Enter the code you used when you created it.",
+      codigoRespaldo: "Backup code", reemplaza: "This <strong>replaces</strong> all current data on this phone.",
+      descifrando: "Decrypting…", respaldoRestaurado: "Backup restored", codigoRespaldoIncorrecto: "Incorrect code for this backup.",
+      restaurarBtn: "Restore", codigoActual: "Current code", codigoNuevo: "New code", repiteNuevo: "Repeat the new code",
+      notaRespaldosViejos: "Previous backups will still open with the old code.", cambiar: "Change",
+      minimo6Corto: "At least 6 characters.", nuevosNoCoinciden: "The new codes don't match.",
+      actualNoCorrecto: "The current code is not correct.", codigoCambiado: "Code changed",
+      confirmaCSV: "The CSV is NOT encrypted: anyone who opens it will see your numbers. Continue?",
+      csvCabecera: ["account", "type", "class", "currency", "date", "value"],
+      necesitaHttps: "Open this app from a secure (https) address in Safari.",
+    },
+    es: {
+      locale: "es-US",
+      "tipo.efectivo": "Efectivo y bancos", "tipo.inversiones": "Inversiones", "tipo.retiro": "Retiro",
+      "tipo.cripto": "Cripto", "tipo.inmuebles": "Inmuebles", "tipo.vehiculos": "Vehículos",
+      "tipo.empresas": "Empresas", "tipo.otros_activos": "Otros activos", "tipo.tarjetas": "Tarjetas de crédito",
+      "tipo.hipotecas": "Hipotecas", "tipo.prestamos": "Préstamos", "tipo.otras_deudas": "Otras deudas",
+      "clase.activo": "activo", "clase.pasivo": "pasivo",
+      borrar: "Borrar", limpiar: "Limpiar", codigo: "Código",
+      tocaCampo: "Toca el campo y escribe tu código.",
+      crearInstr: "Crea un código de al menos 6 números. Protege tus datos, que se guardan cifrados en este teléfono.",
+      continuar: "Continuar", preferirLetras: "Prefiero un código con letras",
+      importante: "Importante:", avisoOlvido: "si olvidas este código no hay forma de recuperar los datos. Nadie puede abrirlos sin él.",
+      restaurarDesde: "Restaurar desde un respaldo", minimo6: "El código debe tener al menos 6 caracteres.",
+      repetirInstr: "Escribe el mismo código otra vez para confirmarlo.", crearEntrar: "Crear y entrar",
+      crearInstrCorta: "Crea un código de al menos 6 números.", noCoinciden: "Los códigos no coinciden. Empieza de nuevo.",
+      protegiendo: "Protegiendo…", abrirInstr: "Escribe tu código para abrir.", abrir: "Abrir",
+      tieneLetras: "Mi código tiene letras: usar teclado", olvide: "Olvidé mi código: empezar de cero",
+      confirmaOlvido1: "Sin el código no se pueden abrir los datos guardados. Empezar de cero BORRA todo lo de este teléfono. ¿Continuar?",
+      confirmaOlvido2: "Última confirmación: ¿borrar todo y crear un código nuevo? Si tienes un respaldo podrás restaurarlo con su código.",
+      espera: "Espera {s} segundos.", abriendo: "Abriendo…", incorrecto: "Código incorrecto.",
+      resumen: "Resumen", cuentas: "Cuentas", ajustes: "Ajustes", bloquear: "Bloquear",
+      desde: "desde {f}", sinRespaldoN: "Hace más de {n} días sin respaldo · Respaldar ahora",
+      patrimonioNeto: "Patrimonio neto", graficaVacia: "La gráfica aparece cuando registres valores en al menos dos fechas.",
+      activos: "Activos", deudas: "Deudas", distribucion: "Distribución de activos",
+      sinCuentas: "Aún no tienes cuentas.", primeraCuenta: "Agregar mi primera cuenta",
+      graficaAria: "Evolución del patrimonio neto", min: "Mín.", max: "Máx.",
+      actualizado: "Actualizado {f}", sinValor: "Sin valor",
+      cuentasVacio: "Agrega tus cuentas, inversiones, propiedades y deudas con el botón +.",
+      agregarCuenta: "Agregar cuenta", editarCuenta: "Editar cuenta", nuevaCuenta: "Nueva cuenta",
+      nombre: "Nombre", ejemploNombre: "Ej. Chase ahorros, Casa, Tesla", tipo: "Tipo", moneda: "Moneda",
+      valorActual: "Valor actual", fecha: "Fecha", notaDeudas: "Para deudas escribe el saldo que debes, en positivo.",
+      guardar: "Guardar", agregar: "Agregar", cancelar: "Cancelar", escribeNombre: "Escribe un nombre.", valorInvalido: "Valor inválido.",
+      cuentaActualizada: "Cuenta actualizada", cuentaAgregada: "Cuenta agregada",
+      nuevoValor: "Nuevo valor", actualizarValor: "Actualizar valor", historial: "Historial", borrarRegistro: "Borrar registro",
+      eliminarCuenta: "Eliminar cuenta", escribeValor: "Escribe un valor válido.", valorActualizado: "Valor actualizado",
+      confirmaBorrarRegistro: "¿Borrar el registro del {f}?", confirmaEliminar: '¿Eliminar "{n}" y todo su historial?',
+      cuentaEliminada: "Cuenta eliminada",
+      monedas: "Monedas", monedaPrincipal: "Moneda principal", tasa: "Pesos colombianos por 1 dólar",
+      respaldo: "Respaldo", ultimoRespaldo: "Último respaldo: {f}", sinRespaldo: "Aún no has hecho un respaldo.",
+      notaRespaldo: "El respaldo va cifrado con tu código. Guárdalo en Google Drive desde el menú Compartir.",
+      respaldarAhora: "Respaldar ahora", restaurar: "Restaurar desde respaldo", seguridad: "Seguridad",
+      cambiarCodigo: "Cambiar código", exportarCSV: "Exportar a CSV (sin cifrar)",
+      borrarTodo: "Borrar todos los datos de este teléfono", idioma: "Idioma",
+      pie: "Patrimonio · versión de prueba {v}<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.",
+      tasaInvalida: "Tasa inválida", guardado: "Guardado",
+      confirmaBorrarTodo: "Esto borra TODO de este teléfono. ¿Hiciste un respaldo?",
+      escribeBORRAR: "Escribe BORRAR para confirmar", palabraBorrar: "BORRAR",
+      respaldoListo: "Respaldo listo", noEsRespaldo: "Ese archivo no es un respaldo de Patrimonio",
+      restaurarTitulo: "Restaurar respaldo", restaurarInstr: "Respaldo del {f}. Escribe el código que usabas cuando lo creaste.",
+      codigoRespaldo: "Código del respaldo", reemplaza: "Esto <strong>reemplaza</strong> todos los datos actuales de este teléfono.",
+      descifrando: "Descifrando…", respaldoRestaurado: "Respaldo restaurado", codigoRespaldoIncorrecto: "Código incorrecto para este respaldo.",
+      restaurarBtn: "Restaurar", codigoActual: "Código actual", codigoNuevo: "Nuevo código", repiteNuevo: "Repite el nuevo código",
+      notaRespaldosViejos: "Los respaldos anteriores seguirán abriéndose con el código viejo.", cambiar: "Cambiar",
+      minimo6Corto: "Mínimo 6 caracteres.", nuevosNoCoinciden: "Los códigos nuevos no coinciden.",
+      actualNoCorrecto: "El código actual no es correcto.", codigoCambiado: "Código cambiado",
+      confirmaCSV: "El CSV NO va cifrado: cualquiera que lo abra verá tus cifras. ¿Continuar?",
+      csvCabecera: ["cuenta", "tipo", "clase", "moneda", "fecha", "valor"],
+      necesitaHttps: "Abre esta app desde una dirección segura (https) en Safari.",
+    },
+  };
+  const VERSION_APP = "1.4";
+  let idioma = (() => {
+    try {
+      return localStorage.getItem("idioma") === "es" ? "es" : "en";
+    } catch {
+      return "en";
+    }
+  })();
+  function t(clave, vars = {}) {
+    let s = TEXTOS[idioma][clave] ?? TEXTOS.en[clave] ?? clave;
+    if (typeof s !== "string") return s;
+    for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, v);
+    return s;
+  }
+  const nombreTipo = (k) => t(`tipo.${k}`);
+  function cambiarIdioma(nuevo) {
+    idioma = nuevo === "es" ? "es" : "en";
+    try {
+      localStorage.setItem("idioma", idioma);
+    } catch {
+      /* sin almacenamiento: solo dura esta sesión */
+    }
+    document.documentElement.lang = idioma;
+  }
+  document.documentElement.lang = idioma;
 
   const enc = new TextEncoder();
   const dec = new TextDecoder();
@@ -53,7 +202,7 @@
   const desdeB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
   function dinero(valor, moneda, decimales = 0) {
-    return new Intl.NumberFormat("es-US", {
+    return new Intl.NumberFormat(t("locale"), {
       style: "currency",
       currency: moneda,
       minimumFractionDigits: decimales,
@@ -62,7 +211,7 @@
   }
   function fechaCorta(iso) {
     const [a, m, d] = iso.split("-").map(Number);
-    return new Date(a, m - 1, d).toLocaleDateString("es-US", { day: "numeric", month: "short", year: "numeric" });
+    return new Date(a, m - 1, d).toLocaleDateString(t("locale"), { day: "numeric", month: "short", year: "numeric" });
   }
   function aviso(texto) {
     const el = $("#aviso");
@@ -228,9 +377,9 @@
   const tecladoHTML = () => `
     <div class="teclado" id="teclado">
       ${["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => `<button class="tecla" data-d="${d}">${d}</button>`).join("")}
-      <button class="tecla tenue" data-d="borrar" aria-label="Borrar">⌫</button>
+      <button class="tecla tenue" data-d="borrar" aria-label="${t("borrar")}">⌫</button>
       <button class="tecla" data-d="0">0</button>
-      <button class="tecla tenue" data-d="limpiar" aria-label="Limpiar">C</button>
+      <button class="tecla tenue" data-d="limpiar" aria-label="${t("limpiar")}">C</button>
     </div>`;
   function conectarTeclado(campo) {
     $$(".tecla").forEach(
@@ -252,7 +401,16 @@
     viejo.replaceWith(nuevoCampo);
     $("#teclado")?.classList.add("oculto");
     $("#cambiar-teclado")?.classList.add("oculto");
-    $("#err").textContent = "Toca el campo y escribe tu código.";
+    $("#err").textContent = t("tocaCampo");
+  }
+
+  const botonIdioma = () =>
+    `<button class="btn secundario" id="boton-idioma">${idioma === "en" ? "Español" : "English"}</button>`;
+  function conectarBotonIdioma() {
+    $("#boton-idioma").onclick = () => {
+      cambiarIdioma(idioma === "en" ? "es" : "en");
+      pintarBloqueo();
+    };
   }
 
   async function pintarBloqueo() {
@@ -265,14 +423,15 @@
         <div class="bloqueo">
           <img src="iconos/icono-192.png" alt="" />
           <h1>Patrimonio</h1>
-          <p class="tenue" id="instruccion">Crea un código de al menos 6 números. Protege tus datos, que se guardan cifrados en este teléfono.</p>
-          <input id="c1" type="password" autocomplete="off" readonly aria-label="Código" />
+          <p class="tenue" id="instruccion">${t("crearInstr")}</p>
+          <input id="c1" type="password" autocomplete="off" readonly aria-label="${t("codigo")}" />
           <div class="error" id="err"></div>
           ${tecladoHTML()}
-          <button class="btn" id="crear">Continuar</button>
-          <button class="btn secundario" id="cambiar-teclado">Prefiero un código con letras</button>
-          <div class="nota"><strong>Importante:</strong> si olvidas este código no hay forma de recuperar los datos. Nadie puede abrirlos sin él.</div>
-          <button class="btn secundario" id="restaurar">Restaurar desde un respaldo</button>
+          <button class="btn" id="crear">${t("continuar")}</button>
+          <button class="btn secundario" id="cambiar-teclado">${t("preferirLetras")}</button>
+          <div class="nota"><strong>${t("importante")}</strong> ${t("avisoOlvido")}</div>
+          <button class="btn secundario" id="restaurar">${t("restaurarDesde")}</button>
+          ${botonIdioma()}
           <input type="file" id="archivo" accept="application/json,.json" class="oculto" />
         </div>`;
       conectarTeclado("#c1");
@@ -280,58 +439,61 @@
       $("#crear").onclick = async () => {
         const valor = $("#c1").value;
         if (primero === null) {
-          if (valor.length < 6) return ($("#err").textContent = "El código debe tener al menos 6 caracteres.");
+          if (valor.length < 6) return ($("#err").textContent = t("minimo6"));
           primero = valor;
           $("#c1").value = "";
-          $("#instruccion").textContent = "Escribe el mismo código otra vez para confirmarlo.";
-          $("#crear").textContent = "Crear y entrar";
+          $("#instruccion").textContent = t("repetirInstr");
+          $("#crear").textContent = t("crearEntrar");
           return;
         }
         if (valor !== primero) {
           primero = null;
           $("#c1").value = "";
-          $("#instruccion").textContent = "Crea un código de al menos 6 números.";
-          $("#crear").textContent = "Continuar";
-          return ($("#err").textContent = "Los códigos no coinciden. Empieza de nuevo.");
+          $("#instruccion").textContent = t("crearInstrCorta");
+          $("#crear").textContent = t("continuar");
+          return ($("#err").textContent = t("noCoinciden"));
         }
         $("#crear").disabled = true;
-        $("#crear").textContent = "Protegiendo…";
+        $("#crear").textContent = t("protegiendo");
         await crearBoveda(valor);
         pedirAlmacenamientoPersistente();
         entrar();
       };
       $("#restaurar").onclick = () => $("#archivo").click();
       $("#archivo").onchange = (e) => restaurarRespaldo(e.target.files[0], true);
+      conectarBotonIdioma();
       return;
     }
     app.innerHTML = `
       <div class="bloqueo">
         <img src="iconos/icono-192.png" alt="" />
         <h1>Patrimonio</h1>
-        <p class="tenue">Escribe tu código para abrir.</p>
-        <input id="cod" type="password" autocomplete="off" readonly aria-label="Código" />
+        <p class="tenue">${t("abrirInstr")}</p>
+        <input id="cod" type="password" autocomplete="off" readonly aria-label="${t("codigo")}" />
         <div class="error" id="err"></div>
         ${tecladoHTML()}
-        <button class="btn" id="abrir">Abrir</button>
-        <button class="btn secundario" id="cambiar-teclado">Mi código tiene letras: usar teclado</button>
-        <button class="btn peligro" id="empezar">Olvidé mi código: empezar de cero</button>
+        <button class="btn" id="abrir">${t("abrir")}</button>
+        <button class="btn secundario" id="cambiar-teclado">${t("tieneLetras")}</button>
+        <button class="btn peligro" id="empezar">${t("olvide")}</button>
+        ${botonIdioma()}
       </div>`;
+    conectarBotonIdioma();
     conectarTeclado("#cod");
     $("#cambiar-teclado").onclick = () => cambiarATecladoSistema("cod", "current-password");
     $("#empezar").onclick = async () => {
-      if (!confirm("Sin el código no se pueden abrir los datos guardados. Empezar de cero BORRA todo lo de este teléfono. ¿Continuar?")) return;
-      if (!confirm("Última confirmación: ¿borrar todo y crear un código nuevo? Si tienes un respaldo podrás restaurarlo con su código.")) return;
+      if (!confirm(t("confirmaOlvido1"))) return;
+      if (!confirm(t("confirmaOlvido2"))) return;
       await almacen.borrar("boveda");
       pintarBloqueo();
     };
     const intentar = async () => {
       const ahora = Date.now();
       if (ahora < esperaHasta) {
-        $("#err").textContent = `Espera ${Math.ceil((esperaHasta - ahora) / 1000)} segundos.`;
+        $("#err").textContent = t("espera", { s: Math.ceil((esperaHasta - ahora) / 1000) });
         return;
       }
       $("#abrir").disabled = true;
-      $("#abrir").textContent = "Abriendo…";
+      $("#abrir").textContent = t("abriendo");
       try {
         await abrirBoveda($("#cod").value);
         intentosFallidos = 0;
@@ -339,9 +501,9 @@
       } catch {
         intentosFallidos++;
         if (intentosFallidos >= 5) esperaHasta = Date.now() + 30000 * 2 ** (intentosFallidos - 5);
-        $("#err").textContent = "Código incorrecto.";
+        $("#err").textContent = t("incorrecto");
         $("#abrir").disabled = false;
-        $("#abrir").textContent = "Abrir";
+        $("#abrir").textContent = t("abrir");
         $("#cod").value = "";
       }
     };
@@ -365,7 +527,7 @@
     const nav = document.createElement("nav");
     nav.className = "nav";
     nav.innerHTML = ["resumen", "cuentas", "ajustes"]
-      .map((v) => `<button data-v="${v}">${ICONO[v]}${v[0].toUpperCase() + v.slice(1)}</button>`)
+      .map((v) => `<button data-v="${v}">${ICONO[v]}${t(v)}</button>`)
       .join("");
     document.body.appendChild(nav);
     $$("button", nav).forEach((b) => (b.onclick = () => ((vista = b.dataset.v), pintar())));
@@ -381,7 +543,7 @@
   }
 
   function cabeza(titulo) {
-    return `<div class="cabeza"><h1>${titulo}</h1><button class="icono-btn" id="candado" aria-label="Bloquear">${ICONO.candado}</button></div>`;
+    return `<div class="cabeza"><h1>${titulo}</h1><button class="icono-btn" id="candado" aria-label="${t("bloquear")}">${ICONO.candado}</button></div>`;
   }
   function conectarCandado() {
     $("#candado").onclick = bloquear;
@@ -390,15 +552,15 @@
   // ── Resumen
   function pintarResumen() {
     const base = datos.ajustes.monedaBase;
-    const t = totales();
+    const tot = totales();
     const hist = historialNeto();
     let cambio = "";
     if (hist.length >= 2) {
       const hace30 = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
       const ref = [...hist].reverse().find((h) => h.fecha <= hace30) ?? hist[0];
-      const d = t.neto - ref.neto;
+      const d = tot.neto - ref.neto;
       const pct = ref.neto !== 0 ? (d / Math.abs(ref.neto)) * 100 : 0;
-      cambio = `<div class="${d >= 0 ? "sube" : "baja"} num">${d >= 0 ? "▲" : "▼"} ${dinero(Math.abs(d), base)} (${pct.toFixed(1)}%) <span class="tenue">desde ${fechaCorta(ref.fecha)}</span></div>`;
+      cambio = `<div class="${d >= 0 ? "sube" : "baja"} num">${d >= 0 ? "▲" : "▼"} ${dinero(Math.abs(d), base)} (${pct.toFixed(1)}%) <span class="tenue">${t("desde", { f: fechaCorta(ref.fecha) })}</span></div>`;
     }
 
     const porTipo = {};
@@ -416,29 +578,29 @@
         Date.now() - Date.parse(datos.ajustes.ultimoRespaldo) > DIAS_RECORDAR_RESPALDO * 864e5);
 
     $("#app").innerHTML = `
-      ${cabeza("Resumen")}
+      ${cabeza(t("resumen"))}
       <div class="contenedor">
-        ${sinRespaldo ? `<button class="btn secundario" id="ir-respaldo">Hace más de ${DIAS_RECORDAR_RESPALDO} días sin respaldo · Respaldar ahora</button>` : ""}
+        ${sinRespaldo ? `<button class="btn secundario" id="ir-respaldo">${t("sinRespaldoN", { n: DIAS_RECORDAR_RESPALDO })}</button>` : ""}
         <div class="tarjeta">
-          <div class="etiqueta">Patrimonio neto</div>
-          <div class="cifra-grande">${dinero(t.neto, base)}</div>
+          <div class="etiqueta">${t("patrimonioNeto")}</div>
+          <div class="cifra-grande">${dinero(tot.neto, base)}</div>
           ${cambio}
-          ${hist.length >= 2 ? graficaSVG(hist, base) : `<p class="tenue">La gráfica aparece cuando registres valores en al menos dos fechas.</p>`}
+          ${hist.length >= 2 ? graficaSVG(hist, base) : `<p class="tenue">${t("graficaVacia")}</p>`}
         </div>
         <div class="dos">
-          <div class="tarjeta"><div class="etiqueta">Activos</div><div class="num sube">${dinero(t.activos, base)}</div></div>
-          <div class="tarjeta"><div class="etiqueta">Deudas</div><div class="num baja">${dinero(t.pasivos, base)}</div></div>
+          <div class="tarjeta"><div class="etiqueta">${t("activos")}</div><div class="num sube">${dinero(tot.activos, base)}</div></div>
+          <div class="tarjeta"><div class="etiqueta">${t("deudas")}</div><div class="num baja">${dinero(tot.pasivos, base)}</div></div>
         </div>
         ${
           dist.length
-            ? `<div class="tarjeta"><div class="etiqueta">Distribución de activos</div><div class="dist">${dist
+            ? `<div class="tarjeta"><div class="etiqueta">${t("distribucion")}</div><div class="dist">${dist
                 .map(
-                  ([tipo, v]) => `<div class="dist-fila"><div class="fila"><span>${esc(TIPOS[tipo].nombre)}</span><span class="num tenue">${dinero(v, base)} · ${((v / t.activos) * 100).toFixed(1)}%</span></div><div class="barra"><i data-ancho="${((v / t.activos) * 100).toFixed(2)}"></i></div></div>`,
+                  ([tipo, v]) => `<div class="dist-fila"><div class="fila"><span>${esc(nombreTipo(tipo))}</span><span class="num tenue">${dinero(v, base)} · ${((v / tot.activos) * 100).toFixed(1)}%</span></div><div class="barra"><i data-ancho="${((v / tot.activos) * 100).toFixed(2)}"></i></div></div>`,
                 )
                 .join("")}</div></div>`
             : ""
         }
-        ${datos.cuentas.length === 0 ? `<div class="vacio">Aún no tienes cuentas.<br/><button class="btn" id="primera">Agregar mi primera cuenta</button></div>` : ""}
+        ${datos.cuentas.length === 0 ? `<div class="vacio">${t("sinCuentas")}<br/><button class="btn" id="primera">${t("primeraCuenta")}</button></div>` : ""}
       </div>`;
     // El ancho se fija desde JS para cumplir la política de seguridad (sin estilos en línea).
     $$(".barra > i").forEach((i) => (i.style.width = `${i.dataset.ancho}%`));
@@ -468,13 +630,13 @@
     const Y = (y) => pad.a + (1 - (y - y0) / (y1 - y0)) * (H - pad.a - pad.b);
     const pts = hist.map((h) => `${X(Date.parse(h.fecha)).toFixed(1)},${Y(h.neto).toFixed(1)}`);
     const area = `M${pts[0]} L${pts.join(" L")} L${X(x1).toFixed(1)},${H - pad.b} L${X(x0).toFixed(1)},${H - pad.b}Z`;
-    return `<svg class="grafica" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Evolución del patrimonio neto">
+    return `<svg class="grafica" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${t("graficaAria")}">
       <line class="guia" x1="0" x2="${W}" y1="${H - pad.b}" y2="${H - pad.b}"/>
       <path class="area" d="${area}"/>
       <polyline class="linea" points="${pts.join(" ")}"/>
       <text class="eje" x="${pad.i}" y="${H - 6}">${esc(fechaCorta(hist[0].fecha))}</text>
       <text class="eje" x="${W - pad.d}" y="${H - 6}" text-anchor="end">${esc(fechaCorta(hist.at(-1).fecha))}</text>
-    </svg><div class="fila tenue"><span>Mín. ${dinero(Math.min(...ys), base)}</span><span>Máx. ${dinero(Math.max(...ys), base)}</span></div>`;
+    </svg><div class="fila tenue"><span>${t("min")} ${dinero(Math.min(...ys), base)}</span><span>${t("max")} ${dinero(Math.max(...ys), base)}</span></div>`;
   }
 
   // ── Cuentas
@@ -484,32 +646,32 @@
       .map((tipo) => ({ tipo, cuentas: datos.cuentas.filter((c) => c.tipo === tipo) }))
       .filter((g) => g.cuentas.length);
     $("#app").innerHTML = `
-      ${cabeza("Cuentas")}
+      ${cabeza(t("cuentas"))}
       <div class="contenedor">
         ${
           grupos.length
             ? grupos
                 .map((g) => {
                   const total = g.cuentas.reduce((s, c) => s + convertir(valorActual(c), c.moneda, base), 0);
-                  return `<div class="grupo-titulo"><span class="etiqueta">${esc(TIPOS[g.tipo].nombre)}</span><span class="tenue num">${dinero(total, base)}</span></div>
+                  return `<div class="grupo-titulo"><span class="etiqueta">${esc(nombreTipo(g.tipo))}</span><span class="tenue num">${dinero(total, base)}</span></div>
                 <div class="lista">${g.cuentas
                   .sort((a, b) => convertir(valorActual(b), b.moneda, base) - convertir(valorActual(a), a.moneda, base))
                   .map((c) => {
                     const ult = [...c.valores].sort((a, b) => a.fecha.localeCompare(b.fecha)).at(-1);
                     return `<button class="item" data-id="${esc(c.id)}"><div class="fila"><span class="nombre">${esc(c.nombre)}</span><span class="num">${dinero(valorActual(c), c.moneda)}</span></div>
-                      <div class="fila tenue"><span>${ult ? "Actualizado " + esc(fechaCorta(ult.fecha)) : "Sin valor"}</span><span>${c.moneda !== base ? "≈ " + dinero(convertir(valorActual(c), c.moneda, base), base) : ""}</span></div></button>`;
+                      <div class="fila tenue"><span>${ult ? esc(t("actualizado", { f: fechaCorta(ult.fecha) })) : t("sinValor")}</span><span>${c.moneda !== base ? "≈ " + dinero(convertir(valorActual(c), c.moneda, base), base) : ""}</span></div></button>`;
                   })
                   .join("")}</div>`;
                 })
                 .join("")
-            : `<div class="vacio">Agrega tus cuentas, inversiones, propiedades y deudas con el botón +.</div>`
+            : `<div class="vacio">${t("cuentasVacio")}</div>`
         }
       </div>`;
     conectarCandado();
     $$(".item").forEach((b) => (b.onclick = () => hojaDetalle(b.dataset.id)));
     const f = document.createElement("button");
     f.className = "flotante";
-    f.setAttribute("aria-label", "Agregar cuenta");
+    f.setAttribute("aria-label", t("agregarCuenta"));
     f.textContent = "+";
     f.onclick = () => hojaCuenta();
     document.body.appendChild(f);
@@ -527,41 +689,41 @@
   $("#hoja").addEventListener("click", (e) => e.target.id === "hoja" && cerrarHoja());
 
   const opcionesTipo = (sel) =>
-    `<optgroup label="Activos">${Object.entries(TIPOS)
-      .filter(([, t]) => t.clase === "activo")
-      .map(([k, t]) => `<option value="${k}" ${k === sel ? "selected" : ""}>${t.nombre}</option>`)
-      .join("")}</optgroup><optgroup label="Deudas">${Object.entries(TIPOS)
-      .filter(([, t]) => t.clase === "pasivo")
-      .map(([k, t]) => `<option value="${k}" ${k === sel ? "selected" : ""}>${t.nombre}</option>`)
+    `<optgroup label="${t("activos")}">${Object.entries(TIPOS)
+      .filter(([, x]) => x.clase === "activo")
+      .map(([k]) => `<option value="${k}" ${k === sel ? "selected" : ""}>${nombreTipo(k)}</option>`)
+      .join("")}</optgroup><optgroup label="${t("deudas")}">${Object.entries(TIPOS)
+      .filter(([, x]) => x.clase === "pasivo")
+      .map(([k]) => `<option value="${k}" ${k === sel ? "selected" : ""}>${nombreTipo(k)}</option>`)
       .join("")}</optgroup>`;
   const opcionesMoneda = (sel) => MONEDAS.map((m) => `<option ${m === sel ? "selected" : ""}>${m}</option>`).join("");
 
   function hojaCuenta(id) {
     const c = id ? datos.cuentas.find((x) => x.id === id) : null;
     abrirHoja(`
-      <h2>${c ? "Editar cuenta" : "Nueva cuenta"}</h2>
-      <label for="n">Nombre</label><input id="n" maxlength="60" value="${c ? esc(c.nombre) : ""}" placeholder="Ej. Chase ahorros, Casa, Tesla" />
-      <label for="t">Tipo</label><select id="t">${opcionesTipo(c?.tipo ?? "efectivo")}</select>
-      <label for="m">Moneda</label><select id="m">${opcionesMoneda(c?.moneda ?? datos.ajustes.monedaBase)}</select>
+      <h2>${c ? t("editarCuenta") : t("nuevaCuenta")}</h2>
+      <label for="n">${t("nombre")}</label><input id="n" maxlength="60" value="${c ? esc(c.nombre) : ""}" placeholder="${t("ejemploNombre")}" />
+      <label for="t">${t("tipo")}</label><select id="t">${opcionesTipo(c?.tipo ?? "efectivo")}</select>
+      <label for="m">${t("moneda")}</label><select id="m">${opcionesMoneda(c?.moneda ?? datos.ajustes.monedaBase)}</select>
       ${
         c
           ? ""
-          : `<div class="dos"><div><label for="v">Valor actual</label><input id="v" inputmode="decimal" placeholder="0" /></div>
-             <div><label for="f">Fecha</label><input id="f" type="date" value="${hoy()}" max="${hoy()}" /></div></div>
-             <p class="tenue">Para deudas escribe el saldo que debes, en positivo.</p>`
+          : `<div class="dos"><div><label for="v">${t("valorActual")}</label><input id="v" inputmode="decimal" placeholder="0" /></div>
+             <div><label for="f">${t("fecha")}</label><input id="f" type="date" value="${hoy()}" max="${hoy()}" /></div></div>
+             <p class="tenue">${t("notaDeudas")}</p>`
       }
       <div class="error" id="err-h"></div>
-      <button class="btn" id="ok">${c ? "Guardar" : "Agregar"}</button>
-      <button class="btn secundario" id="cancelar">Cancelar</button>`);
+      <button class="btn" id="ok">${c ? t("guardar") : t("agregar")}</button>
+      <button class="btn secundario" id="cancelar">${t("cancelar")}</button>`);
     $("#cancelar").onclick = cerrarHoja;
     $("#ok").onclick = async () => {
       const nombre = $("#n").value.trim();
-      if (!nombre) return ($("#err-h").textContent = "Escribe un nombre.");
+      if (!nombre) return ($("#err-h").textContent = t("escribeNombre"));
       if (c) {
         Object.assign(c, { nombre, tipo: $("#t").value, moneda: $("#m").value });
       } else {
         const valor = leerNumero($("#v").value || "0");
-        if (Number.isNaN(valor) || valor < 0) return ($("#err-h").textContent = "Valor inválido.");
+        if (Number.isNaN(valor) || valor < 0) return ($("#err-h").textContent = t("valorInvalido"));
         datos.cuentas.push({
           id: nuevoId(),
           nombre,
@@ -572,7 +734,7 @@
       }
       await guardarDatos();
       cerrarHoja();
-      aviso(c ? "Cuenta actualizada" : "Cuenta agregada");
+      aviso(c ? t("cuentaActualizada") : t("cuentaAgregada"));
       pintar();
     };
   }
@@ -583,37 +745,37 @@
     const hist = [...c.valores].sort((a, b) => b.fecha.localeCompare(a.fecha));
     abrirHoja(`
       <h2>${esc(c.nombre)}</h2>
-      <div class="tenue">${esc(TIPOS[c.tipo].nombre)} · ${c.moneda}</div>
+      <div class="tenue">${esc(nombreTipo(c.tipo))} · ${c.moneda}</div>
       <div class="cifra-grande">${dinero(valorActual(c), c.moneda, 2)}</div>
-      <div class="dos"><div><label for="v">Nuevo valor</label><input id="v" inputmode="decimal" placeholder="0" /></div>
-        <div><label for="f">Fecha</label><input id="f" type="date" value="${hoy()}" max="${hoy()}" /></div></div>
+      <div class="dos"><div><label for="v">${t("nuevoValor")}</label><input id="v" inputmode="decimal" placeholder="0" /></div>
+        <div><label for="f">${t("fecha")}</label><input id="f" type="date" value="${hoy()}" max="${hoy()}" /></div></div>
       <div class="error" id="err-h"></div>
-      <button class="btn" id="act">Actualizar valor</button>
-      <div class="etiqueta separado">Historial</div>
+      <button class="btn" id="act">${t("actualizarValor")}</button>
+      <div class="etiqueta separado">${t("historial")}</div>
       <div id="hist">${hist
         .map(
-          (h, i) => `<div class="historial-fila"><span>${esc(fechaCorta(h.fecha))}</span><span class="num">${dinero(h.valor, c.moneda, 2)} ${hist.length > 1 ? `<button class="mini" data-i="${i}" aria-label="Borrar registro">Borrar</button>` : ""}</span></div>`,
+          (h, i) => `<div class="historial-fila"><span>${esc(fechaCorta(h.fecha))}</span><span class="num">${dinero(h.valor, c.moneda, 2)} ${hist.length > 1 ? `<button class="mini" data-i="${i}" aria-label="${t("borrarRegistro")}">${t("borrar")}</button>` : ""}</span></div>`,
         )
         .join("")}</div>
-      <button class="btn secundario" id="editar">Editar cuenta</button>
-      <button class="btn peligro" id="eliminar">Eliminar cuenta</button>`);
+      <button class="btn secundario" id="editar">${t("editarCuenta")}</button>
+      <button class="btn peligro" id="eliminar">${t("eliminarCuenta")}</button>`);
     $("#act").onclick = async () => {
       const valor = leerNumero($("#v").value);
       const fecha = $("#f").value || hoy();
-      if (Number.isNaN(valor) || valor < 0) return ($("#err-h").textContent = "Escribe un valor válido.");
+      if (Number.isNaN(valor) || valor < 0) return ($("#err-h").textContent = t("escribeValor"));
       const existente = c.valores.find((x) => x.fecha === fecha);
       if (existente) existente.valor = valor;
       else c.valores.push({ fecha, valor });
       await guardarDatos();
       cerrarHoja();
-      aviso("Valor actualizado");
+      aviso(t("valorActualizado"));
       pintar();
     };
     $$(".mini").forEach(
       (b) =>
         (b.onclick = async () => {
           const reg = hist[Number(b.dataset.i)];
-          if (!confirm(`¿Borrar el registro del ${fechaCorta(reg.fecha)}?`)) return;
+          if (!confirm(t("confirmaBorrarRegistro", { f: fechaCorta(reg.fecha) }))) return;
           c.valores = c.valores.filter((x) => x !== reg);
           await guardarDatos();
           hojaDetalle(id);
@@ -622,11 +784,11 @@
     );
     $("#editar").onclick = () => hojaCuenta(id);
     $("#eliminar").onclick = async () => {
-      if (!confirm(`¿Eliminar "${c.nombre}" y todo su historial?`)) return;
+      if (!confirm(t("confirmaEliminar", { n: c.nombre }))) return;
       datos.cuentas = datos.cuentas.filter((x) => x.id !== id);
       await guardarDatos();
       cerrarHoja();
-      aviso("Cuenta eliminada");
+      aviso(t("cuentaEliminada"));
       pintar();
     };
   }
@@ -635,37 +797,46 @@
   function pintarAjustes() {
     const a = datos.ajustes;
     $("#app").innerHTML = `
-      ${cabeza("Ajustes")}
+      ${cabeza(t("ajustes"))}
       <div class="contenedor">
         <div class="tarjeta">
-          <div class="etiqueta">Monedas</div>
-          <label for="base">Moneda principal</label><select id="base">${opcionesMoneda(a.monedaBase)}</select>
-          <label for="tasa">Pesos colombianos por 1 dólar</label><input id="tasa" inputmode="decimal" value="${a.tasaCOP}" />
-          <button class="btn secundario" id="guardar-monedas">Guardar</button>
+          <div class="etiqueta">${t("idioma")} · Language</div>
+          <select id="idioma" aria-label="${t("idioma")}"><option value="en" ${idioma === "en" ? "selected" : ""}>English</option><option value="es" ${idioma === "es" ? "selected" : ""}>Español</option></select>
         </div>
         <div class="tarjeta">
-          <div class="etiqueta">Respaldo</div>
-          <p class="tenue">${a.ultimoRespaldo ? "Último respaldo: " + esc(new Date(a.ultimoRespaldo).toLocaleString("es-US")) : "Aún no has hecho un respaldo."}<br/>El respaldo va cifrado con tu código. Guárdalo en Google Drive desde el menú Compartir.</p>
-          <button class="btn" id="respaldar">Respaldar ahora</button>
-          <button class="btn secundario" id="restaurar">Restaurar desde respaldo</button>
+          <div class="etiqueta">${t("monedas")}</div>
+          <label for="base">${t("monedaPrincipal")}</label><select id="base">${opcionesMoneda(a.monedaBase)}</select>
+          <label for="tasa">${t("tasa")}</label><input id="tasa" inputmode="decimal" value="${a.tasaCOP}" />
+          <button class="btn secundario" id="guardar-monedas">${t("guardar")}</button>
+        </div>
+        <div class="tarjeta">
+          <div class="etiqueta">${t("respaldo")}</div>
+          <p class="tenue">${a.ultimoRespaldo ? esc(t("ultimoRespaldo", { f: new Date(a.ultimoRespaldo).toLocaleString(t("locale")) })) : t("sinRespaldo")}<br/>${t("notaRespaldo")}</p>
+          <button class="btn" id="respaldar">${t("respaldarAhora")}</button>
+          <button class="btn secundario" id="restaurar">${t("restaurar")}</button>
           <input type="file" id="archivo" accept="application/json,.json" class="oculto" />
         </div>
         <div class="tarjeta">
-          <div class="etiqueta">Seguridad</div>
-          <button class="btn secundario" id="cambiar">Cambiar código</button>
-          <button class="btn secundario" id="csv">Exportar a CSV (sin cifrar)</button>
-          <button class="btn peligro" id="borrar">Borrar todos los datos de este teléfono</button>
+          <div class="etiqueta">${t("seguridad")}</div>
+          <button class="btn secundario" id="cambiar">${t("cambiarCodigo")}</button>
+          <button class="btn secundario" id="csv">${t("exportarCSV")}</button>
+          <button class="btn peligro" id="borrar">${t("borrarTodo")}</button>
         </div>
-        <p class="tenue centrado">Patrimonio · versión de prueba 1.3<br/>Tus datos nunca salen del teléfono salvo en los respaldos que tú hagas.</p>
+        <p class="tenue centrado">${t("pie", { v: VERSION_APP })}</p>
       </div>`;
     conectarCandado();
+    $("#idioma").onchange = (e) => {
+      cambiarIdioma(e.target.value);
+      pintarNav();
+      pintar();
+    };
     $("#guardar-monedas").onclick = async () => {
       const tasa = leerNumero($("#tasa").value);
-      if (!(tasa > 0)) return aviso("Tasa inválida");
+      if (!(tasa > 0)) return aviso(t("tasaInvalida"));
       a.monedaBase = $("#base").value;
       a.tasaCOP = tasa;
       await guardarDatos();
-      aviso("Guardado");
+      aviso(t("guardado"));
     };
     $("#respaldar").onclick = respaldar;
     $("#restaurar").onclick = () => $("#archivo").click();
@@ -673,8 +844,8 @@
     $("#cambiar").onclick = hojaCambiarCodigo;
     $("#csv").onclick = exportarCSV;
     $("#borrar").onclick = async () => {
-      if (!confirm("Esto borra TODO de este teléfono. ¿Hiciste un respaldo?")) return;
-      if (prompt('Escribe BORRAR para confirmar') !== "BORRAR") return;
+      if (!confirm(t("confirmaBorrarTodo"))) return;
+      if ((prompt(t("escribeBORRAR")) || "").trim().toUpperCase() !== t("palabraBorrar")) return;
       await almacen.borrar("boveda");
       llave = datos = sal = null;
       pintarBloqueo();
@@ -711,7 +882,7 @@
     if (ok) {
       datos.ajustes.ultimoRespaldo = copia.ajustes.ultimoRespaldo;
       await guardarDatos();
-      aviso("Respaldo listo");
+      aviso(t("respaldoListo"));
       pintar();
     }
   }
@@ -723,20 +894,20 @@
       r = JSON.parse(await archivo.text());
       if (r.app !== "patrimonio" || r.tipo !== "respaldo") throw new Error();
     } catch {
-      return aviso("Ese archivo no es un respaldo de Patrimonio");
+      return aviso(t("noEsRespaldo"));
     }
     abrirHoja(`
-      <h2>Restaurar respaldo</h2>
-      <p class="tenue">Respaldo del ${esc(new Date(r.creado).toLocaleString("es-US"))}. Escribe el código que usabas cuando lo creaste.</p>
-      <label for="cr">Código del respaldo</label><input id="cr" type="password" />
-      ${sinBoveda ? "" : `<div class="nota">Esto <strong>reemplaza</strong> todos los datos actuales de este teléfono.</div>`}
+      <h2>${t("restaurarTitulo")}</h2>
+      <p class="tenue">${esc(t("restaurarInstr", { f: new Date(r.creado).toLocaleString(t("locale")) }))}</p>
+      <label for="cr">${t("codigoRespaldo")}</label><input id="cr" type="password" />
+      ${sinBoveda ? "" : `<div class="nota">${t("reemplaza")}</div>`}
       <div class="error" id="err-h"></div>
-      <button class="btn" id="ok">Restaurar</button>
-      <button class="btn secundario" id="cancelar">Cancelar</button>`);
+      <button class="btn" id="ok">${t("restaurarBtn")}</button>
+      <button class="btn secundario" id="cancelar">${t("cancelar")}</button>`);
     $("#cancelar").onclick = cerrarHoja;
     $("#ok").onclick = async () => {
       $("#ok").disabled = true;
-      $("#ok").textContent = "Descifrando…";
+      $("#ok").textContent = t("descifrando");
       try {
         const s = desdeB64(r.sal);
         const k = await derivarLlave($("#cr").value, s);
@@ -748,50 +919,50 @@
         }
         await guardarDatos(); // queda cifrado con el código actual
         cerrarHoja();
-        aviso("Respaldo restaurado");
+        aviso(t("respaldoRestaurado"));
         entrar();
       } catch {
-        $("#err-h").textContent = "Código incorrecto para este respaldo.";
+        $("#err-h").textContent = t("codigoRespaldoIncorrecto");
         $("#ok").disabled = false;
-        $("#ok").textContent = "Restaurar";
+        $("#ok").textContent = t("restaurarBtn");
       }
     };
   }
 
   function hojaCambiarCodigo() {
     abrirHoja(`
-      <h2>Cambiar código</h2>
-      <label for="act">Código actual</label><input id="act" type="password" autocomplete="current-password" />
-      <label for="n1">Nuevo código</label><input id="n1" type="password" autocomplete="new-password" />
-      <label for="n2">Repite el nuevo código</label><input id="n2" type="password" autocomplete="new-password" />
-      <div class="nota">Los respaldos anteriores seguirán abriéndose con el código viejo.</div>
+      <h2>${t("cambiarCodigo")}</h2>
+      <label for="act">${t("codigoActual")}</label><input id="act" type="password" autocomplete="current-password" />
+      <label for="n1">${t("codigoNuevo")}</label><input id="n1" type="password" autocomplete="new-password" />
+      <label for="n2">${t("repiteNuevo")}</label><input id="n2" type="password" autocomplete="new-password" />
+      <div class="nota">${t("notaRespaldosViejos")}</div>
       <div class="error" id="err-h"></div>
-      <button class="btn" id="ok">Cambiar</button>
-      <button class="btn secundario" id="cancelar">Cancelar</button>`);
+      <button class="btn" id="ok">${t("cambiar")}</button>
+      <button class="btn secundario" id="cancelar">${t("cancelar")}</button>`);
     $("#cancelar").onclick = cerrarHoja;
     $("#ok").onclick = async () => {
       const n1 = $("#n1").value;
-      if (n1.length < 6) return ($("#err-h").textContent = "Mínimo 6 caracteres.");
-      if (n1 !== $("#n2").value) return ($("#err-h").textContent = "Los códigos nuevos no coinciden.");
+      if (n1.length < 6) return ($("#err-h").textContent = t("minimo6Corto"));
+      if (n1 !== $("#n2").value) return ($("#err-h").textContent = t("nuevosNoCoinciden"));
       $("#ok").disabled = true;
       try {
         const b = await almacen.obtener("boveda");
         await descifrar(await derivarLlave($("#act").value, desdeB64(b.sal)), b.iv, b.ct);
       } catch {
         $("#ok").disabled = false;
-        return ($("#err-h").textContent = "El código actual no es correcto.");
+        return ($("#err-h").textContent = t("actualNoCorrecto"));
       }
       await crearBoveda(n1);
       cerrarHoja();
-      aviso("Código cambiado");
+      aviso(t("codigoCambiado"));
     };
   }
 
   function exportarCSV() {
-    if (!confirm("El CSV NO va cifrado: cualquiera que lo abra verá tus cifras. ¿Continuar?")) return;
-    const filas = [["cuenta", "tipo", "clase", "moneda", "fecha", "valor"]];
+    if (!confirm(t("confirmaCSV"))) return;
+    const filas = [t("csvCabecera")];
     for (const c of datos.cuentas)
-      for (const v of c.valores) filas.push([c.nombre, TIPOS[c.tipo].nombre, TIPOS[c.tipo].clase, c.moneda, v.fecha, v.valor]);
+      for (const v of c.valores) filas.push([c.nombre, nombreTipo(c.tipo), t(`clase.${TIPOS[c.tipo].clase}`), c.moneda, v.fecha, v.valor]);
     const csv = filas.map((f) => f.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\n");
     compartirOBajar(`patrimonio-${hoy()}.csv`, "﻿" + csv, "text/csv");
   }
@@ -812,7 +983,7 @@
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
   if (!window.crypto?.subtle) {
-    $("#app").innerHTML = `<div class="bloqueo"><h1>Patrimonio</h1><p class="tenue">Abre esta app desde una dirección segura (https) en Safari.</p></div>`;
+    $("#app").innerHTML = `<div class="bloqueo"><h1>Patrimonio</h1><p class="tenue">${t("necesitaHttps")}</p></div>`;
   } else {
     pintarBloqueo();
   }
