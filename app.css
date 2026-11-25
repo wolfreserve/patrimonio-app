@@ -135,3 +135,41 @@ body.privado #app { filter: blur(24px); }
   font-size: 26px; font-weight: 500; cursor: pointer; touch-action: manipulation;
 }
 .tecla:active { background: var(--tarjeta-2); }
+
+/* ── Tarjeta principal de patrimonio ── */
+.hero {
+  position: relative; overflow: hidden; padding: 20px 18px 16px;
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(52, 211, 153, 0.10), transparent 60%),
+    radial-gradient(90% 70% at 0% 100%, rgba(96, 165, 250, 0.08), transparent 60%),
+    linear-gradient(180deg, #1d2334 0%, #161b28 100%);
+  border-color: #2b3348;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.hero .cifra-grande { font-size: 42px; letter-spacing: -1.5px; margin: 6px 0 2px; }
+.h-cambio { font-size: 15px; font-weight: 600; min-height: 22px; }
+.h-cambio .tenue { font-weight: 400; margin-left: 4px; }
+
+.g-caja { margin: 14px -18px 0; height: 210px; position: relative; }
+.g-svg { display: block; overflow: visible; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.g-guia { stroke: rgba(255, 255, 255, 0.06); stroke-width: 1; }
+.g-base { stroke: rgba(255, 255, 255, 0.22); stroke-width: 1; stroke-dasharray: 2 5; }
+.g-eje { fill: #7d869c; font-size: 11px; font-variant-numeric: tabular-nums; }
+.g-linea { fill: none; stroke-width: 2.75; stroke-linecap: round; stroke-linejoin: round; transition: stroke-dashoffset 1.2s cubic-bezier(0.22, 0.9, 0.24, 1); }
+.g-area { opacity: 0; transition: opacity 0.9s ease 0.35s; }
+.g-lista .g-linea { stroke-dashoffset: 0 !important; }
+.g-lista .g-area { opacity: 1; }
+.g-cursor line { stroke: rgba(255, 255, 255, 0.55); stroke-width: 1; stroke-dasharray: 3 3; }
+.g-cursor circle { filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.6)); }
+
+.rangos { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.25); border-radius: 999px; padding: 4px; margin-top: 10px; }
+.rango {
+  flex: 1; border: 0; background: transparent; color: var(--tenue); font-size: 13px; font-weight: 600;
+  padding: 8px 0; border-radius: 999px; cursor: pointer; transition: background 0.2s, color 0.2s;
+}
+.rango.activo { background: rgba(255, 255, 255, 0.10); color: var(--texto); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+
+.g-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.g-stats > div { background: rgba(0, 0, 0, 0.22); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.g-stats .tenue { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.g-stats p { grid-column: 1 / -1; margin: 0; text-align: center; }

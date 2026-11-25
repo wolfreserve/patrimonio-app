@@ -57,6 +57,9 @@
       activos: "Assets", deudas: "Debts", distribucion: "Asset allocation",
       sinCuentas: "You don't have any accounts yet.", primeraCuenta: "Add my first account",
       graficaAria: "Net worth over time", min: "Min.", max: "Max.",
+      "rango.1M": "1M", "rango.3M": "3M", "rango.6M": "6M", "rango.YTD": "YTD", "rango.1Y": "1Y", "rango.ALL": "ALL",
+      "periodo.1M": "Past month", "periodo.3M": "Past 3 months", "periodo.6M": "Past 6 months", "periodo.YTD": "Year to date", "periodo.1Y": "Past year", "periodo.ALL": "All time",
+      maximo: "High", minimo: "Low", unSoloPunto: "Update your values on different dates to see your trend.",
       actualizado: "Updated {f}", sinValor: "No value",
       cuentasVacio: "Add your accounts, investments, properties and debts with the + button.",
       agregarCuenta: "Add account", editarCuenta: "Edit account", nuevaCuenta: "New account",
@@ -116,6 +119,9 @@
       activos: "Activos", deudas: "Deudas", distribucion: "Distribución de activos",
       sinCuentas: "Aún no tienes cuentas.", primeraCuenta: "Agregar mi primera cuenta",
       graficaAria: "Evolución del patrimonio neto", min: "Mín.", max: "Máx.",
+      "rango.1M": "1M", "rango.3M": "3M", "rango.6M": "6M", "rango.YTD": "Año", "rango.1Y": "1A", "rango.ALL": "Todo",
+      "periodo.1M": "Último mes", "periodo.3M": "Últimos 3 meses", "periodo.6M": "Últimos 6 meses", "periodo.YTD": "En lo que va del año", "periodo.1Y": "Último año", "periodo.ALL": "Desde el inicio",
+      maximo: "Máximo", minimo: "Mínimo", unSoloPunto: "Actualiza tus valores en fechas distintas para ver tu tendencia.",
       actualizado: "Actualizado {f}", sinValor: "Sin valor",
       cuentasVacio: "Agrega tus cuentas, inversiones, propiedades y deudas con el botón +.",
       agregarCuenta: "Agregar cuenta", editarCuenta: "Editar cuenta", nuevaCuenta: "Nueva cuenta",
@@ -150,7 +156,7 @@
       necesitaHttps: "Abre esta app desde una dirección segura (https) en Safari.",
     },
   };
-  const VERSION_APP = "1.4";
+  const VERSION_APP = "1.5";
   let idioma = (() => {
     try {
       return localStorage.getItem("idioma") === "es" ? "es" : "en";
@@ -193,10 +199,9 @@
   // ───────────────────────── Utilidades ─────────────────────────
   const esc = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const hoy = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  };
+  const isoLocal = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const hoy = () => isoLocal(new Date());
   const nuevoId = () => crypto.randomUUID();
   const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
   const desdeB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -550,18 +555,50 @@
   }
 
   // ── Resumen
+  const RANGOS = ["1M", "3M", "6M", "YTD", "1Y", "ALL"];
+  const COLOR_SUBE = "#34d399";
+  const COLOR_BAJA = "#f87171";
+  let rango = "ALL";
+
+  function inicioRango(r) {
+    const d = new Date();
+    if (r === "1M") d.setMonth(d.getMonth() - 1);
+    else if (r === "3M") d.setMonth(d.getMonth() - 3);
+    else if (r === "6M") d.setMonth(d.getMonth() - 6);
+    else if (r === "YTD") d.setMonth(0, 1);
+    else if (r === "1Y") d.setFullYear(d.getFullYear() - 1);
+    else return null;
+    return isoLocal(d);
+  }
+
+  /** Serie del patrimonio neto para el periodo: un punto por cada fecha con cambios, más hoy. */
+  function serieRango(r) {
+    const h = hoy();
+    let pts = historialNeto().filter((p) => p.fecha <= h);
+    if (!pts.length) return [];
+    if (pts.at(-1).fecha < h) pts.push({ fecha: h, neto: pts.at(-1).neto });
+    const ini = inicioRango(r);
+    if (ini) {
+      const antes = pts.filter((p) => p.fecha < ini);
+      const dentro = pts.filter((p) => p.fecha >= ini);
+      if (antes.length && dentro[0]?.fecha !== ini) dentro.unshift({ fecha: ini, neto: antes.at(-1).neto });
+      pts = dentro;
+    }
+    return pts;
+  }
+
+  const porcentaje = (v, base) => (base !== 0 ? ((v - base) / Math.abs(base)) * 100 : null);
+  function textoCambio(v, inicio, moneda) {
+    const d = v - inicio;
+    const pct = porcentaje(v, inicio);
+    const flecha = d > 0 ? "▲" : d < 0 ? "▼" : "•";
+    return `${flecha} ${dinero(Math.abs(d), moneda)}${pct === null ? "" : ` (${d >= 0 ? "+" : "−"}${Math.abs(pct).toFixed(2)}%)`}`;
+  }
+
   function pintarResumen() {
     const base = datos.ajustes.monedaBase;
+    rango = datos.ajustes.rango || rango;
     const tot = totales();
-    const hist = historialNeto();
-    let cambio = "";
-    if (hist.length >= 2) {
-      const hace30 = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
-      const ref = [...hist].reverse().find((h) => h.fecha <= hace30) ?? hist[0];
-      const d = tot.neto - ref.neto;
-      const pct = ref.neto !== 0 ? (d / Math.abs(ref.neto)) * 100 : 0;
-      cambio = `<div class="${d >= 0 ? "sube" : "baja"} num">${d >= 0 ? "▲" : "▼"} ${dinero(Math.abs(d), base)} (${pct.toFixed(1)}%) <span class="tenue">${t("desde", { f: fechaCorta(ref.fecha) })}</span></div>`;
-    }
 
     const porTipo = {};
     for (const c of datos.cuentas) {
@@ -581,12 +618,18 @@
       ${cabeza(t("resumen"))}
       <div class="contenedor">
         ${sinRespaldo ? `<button class="btn secundario" id="ir-respaldo">${t("sinRespaldoN", { n: DIAS_RECORDAR_RESPALDO })}</button>` : ""}
-        <div class="tarjeta">
+        ${
+          datos.cuentas.length
+            ? `<div class="tarjeta hero">
           <div class="etiqueta">${t("patrimonioNeto")}</div>
-          <div class="cifra-grande">${dinero(tot.neto, base)}</div>
-          ${cambio}
-          ${hist.length >= 2 ? graficaSVG(hist, base) : `<p class="tenue">${t("graficaVacia")}</p>`}
-        </div>
+          <div class="cifra-grande" id="h-valor">${dinero(tot.neto, base)}</div>
+          <div class="h-cambio num" id="h-cambio"></div>
+          <div class="g-caja" id="g-caja"></div>
+          <div class="rangos" role="tablist">${RANGOS.map((r) => `<button class="rango ${r === rango ? "activo" : ""}" data-r="${r}" role="tab">${t(`rango.${r}`)}</button>`).join("")}</div>
+          <div class="g-stats" id="g-stats"></div>
+        </div>`
+            : ""
+        }
         <div class="dos">
           <div class="tarjeta"><div class="etiqueta">${t("activos")}</div><div class="num sube">${dinero(tot.activos, base)}</div></div>
           <div class="tarjeta"><div class="etiqueta">${t("deudas")}</div><div class="num baja">${dinero(tot.pasivos, base)}</div></div>
@@ -607,37 +650,231 @@
     conectarCandado();
     $("#primera") && ($("#primera").onclick = () => hojaCuenta());
     $("#ir-respaldo") && ($("#ir-respaldo").onclick = respaldar);
+    if (datos.cuentas.length) {
+      $$(".rango").forEach(
+        (b) =>
+          (b.onclick = async () => {
+            rango = b.dataset.r;
+            $$(".rango").forEach((x) => x.classList.toggle("activo", x === b));
+            pintarHero(false);
+            datos.ajustes.rango = rango;
+            await guardarDatos();
+          }),
+      );
+      pintarHero(true);
+    }
   }
 
-  function graficaSVG(hist, base) {
-    const W = 340;
-    const H = 160;
-    const pad = { i: 4, d: 4, a: 10, b: 22 };
-    const xs = hist.map((h) => Date.parse(h.fecha));
-    const ys = hist.map((h) => h.neto);
-    const x0 = Math.min(...xs);
-    const x1 = Math.max(...xs);
-    let y0 = Math.min(...ys);
-    let y1 = Math.max(...ys);
-    if (y0 === y1) {
-      y0 -= 1;
-      y1 += 1;
+  /** Total, cambio del periodo, gráfica y máximos/mínimos. */
+  function pintarHero(animarNumero) {
+    const base = datos.ajustes.monedaBase;
+    const serie = serieRango(rango);
+    const actual = totales().neto;
+    const inicio = serie[0]?.neto ?? actual;
+    const sube = actual >= inicio;
+    const valorEl = $("#h-valor");
+    const cambioEl = $("#h-cambio");
+    const ponerCambio = (v, etiqueta, colorSube) => {
+      cambioEl.className = `h-cambio num ${colorSube ? "sube" : "baja"}`;
+      cambioEl.innerHTML = `${esc(textoCambio(v, inicio, base))} <span class="tenue">${esc(etiqueta)}</span>`;
+    };
+    const normal = () => {
+      valorEl.textContent = dinero(actual, base);
+      ponerCambio(actual, t(`periodo.${rango}`), sube);
+    };
+    if (animarNumero) contarHasta(valorEl, actual, base);
+    else valorEl.textContent = dinero(actual, base);
+    ponerCambio(actual, t(`periodo.${rango}`), sube);
+
+    const valores = serie.map((p) => p.neto);
+    $("#g-stats").innerHTML =
+      serie.length > 1
+        ? `<div><span class="tenue">${t("maximo")}</span><span class="num">${dinero(Math.max(...valores), base)}</span></div>
+           <div><span class="tenue">${t("minimo")}</span><span class="num">${dinero(Math.min(...valores), base)}</span></div>`
+        : `<p class="tenue">${t("unSoloPunto")}</p>`;
+
+    dibujarGrafica($("#g-caja"), serie, base, sube ? COLOR_SUBE : COLOR_BAJA, (p) => {
+      if (!p) return normal();
+      valorEl.textContent = dinero(p.neto, base);
+      ponerCambio(p.neto, fechaCorta(p.fecha), p.neto >= inicio);
+    });
+  }
+
+  function contarHasta(el, destino, moneda) {
+    const inicio = performance.now();
+    const dur = 900;
+    const paso = (ahora) => {
+      const x = Math.min(1, (ahora - inicio) / dur);
+      const e = 1 - Math.pow(1 - x, 3);
+      el.textContent = dinero(destino * e, moneda);
+      if (x < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  }
+
+  /** Curva suave que nunca se pasa de los valores reales (monótona, Fritsch–Carlson). */
+  function rutaSuave(P) {
+    const n = P.length;
+    if (n < 2) return "";
+    if (n === 2) return `M${P[0][0]},${P[0][1]}L${P[1][0]},${P[1][1]}`;
+    const dx = [];
+    const m = [];
+    for (let i = 0; i < n - 1; i++) {
+      dx.push(P[i + 1][0] - P[i][0]);
+      m.push(dx[i] ? (P[i + 1][1] - P[i][1]) / dx[i] : 0);
     }
-    const margen = (y1 - y0) * 0.1;
+    const tg = [m[0]];
+    for (let i = 1; i < n - 1; i++) tg.push(m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2);
+    tg.push(m[n - 2]);
+    for (let i = 0; i < n - 1; i++) {
+      if (m[i] === 0) {
+        tg[i] = 0;
+        tg[i + 1] = 0;
+        continue;
+      }
+      const a = tg[i] / m[i];
+      const b = tg[i + 1] / m[i];
+      const h = a * a + b * b;
+      if (h > 9) {
+        const k = 3 / Math.sqrt(h);
+        tg[i] = k * a * m[i];
+        tg[i + 1] = k * b * m[i];
+      }
+    }
+    let d = `M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+    for (let i = 0; i < n - 1; i++) {
+      const c1x = P[i][0] + dx[i] / 3;
+      const c1y = P[i][1] + (tg[i] * dx[i]) / 3;
+      const c2x = P[i + 1][0] - dx[i] / 3;
+      const c2y = P[i + 1][1] - (tg[i + 1] * dx[i]) / 3;
+      d += `C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${P[i + 1][0].toFixed(1)},${P[i + 1][1].toFixed(1)}`;
+    }
+    return d;
+  }
+
+  function dibujarGrafica(caja, serie, moneda, color, alDeslizar) {
+    if (!caja || !serie.length) return;
+    const pts = serie.length === 1 ? [serie[0], { ...serie[0] }] : serie;
+    const W = Math.max(260, caja.clientWidth || 320);
+    const H = 210;
+    const arriba = 18;
+    const abajo = 26;
+    const xs = pts.map((p) => Date.parse(`${p.fecha}T00:00:00`));
+    const x0 = xs[0];
+    const x1 = xs.at(-1);
+    const derecha = 18; // espacio para que el punto final y su pulso no se corten
+    const ancho = W - derecha;
+    const X = (i) => (x1 === x0 ? (i === 0 ? 0 : ancho) : ((xs[i] - x0) / (x1 - x0)) * ancho);
+    const vals = pts.map((p) => p.neto);
+    let y0 = Math.min(...vals);
+    let y1 = Math.max(...vals);
+    if (y0 === y1) {
+      const holgura = Math.abs(y0) * 0.05 || 1;
+      y0 -= holgura;
+      y1 += holgura;
+    }
+    const margen = (y1 - y0) * 0.12;
     y0 -= margen;
     y1 += margen;
-    const X = (x) => pad.i + ((x - x0) / (x1 - x0 || 1)) * (W - pad.i - pad.d);
-    const Y = (y) => pad.a + (1 - (y - y0) / (y1 - y0)) * (H - pad.a - pad.b);
-    const pts = hist.map((h) => `${X(Date.parse(h.fecha)).toFixed(1)},${Y(h.neto).toFixed(1)}`);
-    const area = `M${pts[0]} L${pts.join(" L")} L${X(x1).toFixed(1)},${H - pad.b} L${X(x0).toFixed(1)},${H - pad.b}Z`;
-    return `<svg class="grafica" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${t("graficaAria")}">
-      <line class="guia" x1="0" x2="${W}" y1="${H - pad.b}" y2="${H - pad.b}"/>
-      <path class="area" d="${area}"/>
-      <polyline class="linea" points="${pts.join(" ")}"/>
-      <text class="eje" x="${pad.i}" y="${H - 6}">${esc(fechaCorta(hist[0].fecha))}</text>
-      <text class="eje" x="${W - pad.d}" y="${H - 6}" text-anchor="end">${esc(fechaCorta(hist.at(-1).fecha))}</text>
-    </svg><div class="fila tenue"><span>${t("min")} ${dinero(Math.min(...ys), base)}</span><span>${t("max")} ${dinero(Math.max(...ys), base)}</span></div>`;
+    const Y = (v) => arriba + (1 - (v - y0) / (y1 - y0)) * (H - arriba - abajo);
+    const P = pts.map((p, i) => [X(i), Y(p.neto)]);
+    const linea = rutaSuave(P);
+    const piso = H - abajo;
+    const area = `${linea}L${P.at(-1)[0].toFixed(1)},${piso}L0,${piso}Z`;
+    const yInicio = Y(pts[0].neto);
+    const guias = [0.25, 0.5, 0.75].map((f) => {
+      const v = y1 - (y1 - y0) * f;
+      return { y: Y(v), v };
+    });
+    const [ux, uy] = P.at(-1);
+    const fechaMedia = pts.length > 2 ? pts[Math.floor(pts.length / 2)].fecha : null;
+
+    caja.innerHTML = `
+      <svg class="g-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("graficaAria")}">
+        <defs>
+          <linearGradient id="g-relleno" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="${color}" stop-opacity="0.38"/>
+            <stop offset="0.55" stop-color="${color}" stop-opacity="0.10"/>
+            <stop offset="1" stop-color="${color}" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g-trazo" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="${color}" stop-opacity="0.55"/>
+            <stop offset="1" stop-color="${color}" stop-opacity="1"/>
+          </linearGradient>
+          <filter id="g-brillo" x="-10%" y="-60%" width="120%" height="220%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        ${guias
+          .map(
+            (g) => `<line class="g-guia" x1="0" x2="${W}" y1="${g.y.toFixed(1)}" y2="${g.y.toFixed(1)}"/>`,
+          )
+          .join("")}
+        <line class="g-base" x1="0" x2="${W}" y1="${yInicio.toFixed(1)}" y2="${yInicio.toFixed(1)}"/>
+        <path class="g-area" d="${area}" fill="url(#g-relleno)"/>
+        <path class="g-linea" d="${linea}" stroke="url(#g-trazo)" filter="url(#g-brillo)"/>
+        <circle class="g-pulso" cx="${ux}" cy="${uy}" r="5" fill="${color}">
+          <animate attributeName="r" values="5;16" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.45;0" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="${ux}" cy="${uy}" r="4.5" fill="${color}" stroke="#11141c" stroke-width="2"/>
+        <g class="g-cursor oculto" id="g-cursor">
+          <line id="g-cursor-linea" x1="0" x2="0" y1="${arriba - 6}" y2="${piso}"/>
+          <circle id="g-cursor-punto" r="6" fill="${color}" stroke="#ffffff" stroke-width="2.5"/>
+        </g>
+        <text class="g-eje" x="6" y="${H - 6}">${esc(fechaCorta(pts[0].fecha))}</text>
+        ${fechaMedia ? `<text class="g-eje" x="${W / 2}" y="${H - 6}" text-anchor="middle">${esc(fechaCorta(fechaMedia))}</text>` : ""}
+        <text class="g-eje" x="${W - 6}" y="${H - 6}" text-anchor="end">${esc(fechaCorta(pts.at(-1).fecha))}</text>
+        <rect class="g-tactil" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
+      </svg>`;
+
+    // Animación: la línea se dibuja de izquierda a derecha y el área aparece.
+    const lineaEl = $(".g-linea", caja);
+    const largo = lineaEl.getTotalLength?.() || 0;
+    if (largo) {
+      lineaEl.style.strokeDasharray = `${largo}`;
+      lineaEl.style.strokeDashoffset = `${largo}`;
+      requestAnimationFrame(() => requestAnimationFrame(() => caja.classList.add("g-lista")));
+    } else caja.classList.add("g-lista");
+
+    // Deslizar el dedo: muestra el valor y el cambio en cada fecha.
+    const tactil = $(".g-tactil", caja);
+    const cursor = $("#g-cursor", caja);
+    const cLinea = $("#g-cursor-linea", caja);
+    const cPunto = $("#g-cursor-punto", caja);
+    const mover = (e) => {
+      const caja2 = tactil.getBoundingClientRect();
+      const x = ((e.clientX - caja2.left) / caja2.width) * W;
+      let k = 0;
+      for (let i = 1; i < P.length; i++) if (Math.abs(P[i][0] - x) < Math.abs(P[k][0] - x)) k = i;
+      cursor.classList.remove("oculto");
+      cLinea.setAttribute("x1", P[k][0]);
+      cLinea.setAttribute("x2", P[k][0]);
+      cPunto.setAttribute("cx", P[k][0]);
+      cPunto.setAttribute("cy", P[k][1]);
+      alDeslizar(pts[k]);
+    };
+    const soltar = () => {
+      cursor.classList.add("oculto");
+      alDeslizar(null);
+    };
+    tactil.addEventListener("pointerdown", (e) => {
+      tactil.setPointerCapture?.(e.pointerId);
+      mover(e);
+    });
+    tactil.addEventListener("pointermove", (e) => (e.buttons || e.pointerType !== "mouse" ? mover(e) : null));
+    tactil.addEventListener("pointerup", soltar);
+    tactil.addEventListener("pointercancel", soltar);
+    tactil.addEventListener("pointerleave", soltar);
   }
+
+  // La gráfica se vuelve a dibujar si cambia el ancho de la pantalla (por ejemplo al girar el teléfono).
+  let esperaRedimension;
+  window.addEventListener("resize", () => {
+    clearTimeout(esperaRedimension);
+    esperaRedimension = setTimeout(() => datos && vista === "resumen" && $("#g-caja") && pintarHero(false), 150);
+  });
 
   // ── Cuentas
   function pintarCuentas() {
