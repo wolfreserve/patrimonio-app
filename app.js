@@ -156,7 +156,7 @@
       necesitaHttps: "Abre esta app desde una dirección segura (https) en Safari.",
     },
   };
-  const VERSION_APP = "1.5";
+  const VERSION_APP = "1.6";
   let idioma = (() => {
     try {
       return localStorage.getItem("idioma") === "es" ? "es" : "en";
@@ -638,7 +638,7 @@
           dist.length
             ? `<div class="tarjeta"><div class="etiqueta">${t("distribucion")}</div><div class="dist">${dist
                 .map(
-                  ([tipo, v]) => `<div class="dist-fila"><div class="fila"><span>${esc(nombreTipo(tipo))}</span><span class="num tenue">${dinero(v, base)} · ${((v / tot.activos) * 100).toFixed(1)}%</span></div><div class="barra"><i data-ancho="${((v / tot.activos) * 100).toFixed(2)}"></i></div></div>`,
+                  ([tipo, v]) => `<div class="dist-fila"><div class="fila"><span>${esc(nombreTipo(tipo))}</span><span class="num tenue">${((v / tot.activos) * 100).toFixed(1)}%</span></div><div class="barra"><i data-ancho="${((v / tot.activos) * 100).toFixed(2)}"></i></div></div>`,
                 )
                 .join("")}</div></div>`
             : ""
