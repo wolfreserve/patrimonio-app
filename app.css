@@ -173,3 +173,45 @@ body.privado #app { filter: blur(24px); }
 .g-stats > div { background: rgba(0, 0, 0, 0.22); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
 .g-stats .tenue { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 .g-stats p { grid-column: 1 / -1; margin: 0; text-align: center; }
+
+/* ── Cuentas: activos (verde) y deudas (rojo) ── */
+.con-flotante { padding-bottom: 96px; }
+.punto { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; }
+.punto-activo, .seccion-activo .punto { background: var(--verde); box-shadow: 0 0 10px rgba(52, 211, 153, 0.7); margin-right: 8px; }
+.punto-pasivo, .seccion-pasivo .punto { background: var(--rojo); box-shadow: 0 0 10px rgba(248, 113, 113, 0.7); }
+.punto-pasivo { margin-left: 8px; }
+.seccion-pasivo .punto { margin-right: 8px; }
+
+.balance {
+  background:
+    radial-gradient(90% 120% at 0% 0%, rgba(52, 211, 153, 0.10), transparent 55%),
+    radial-gradient(90% 120% at 100% 100%, rgba(248, 113, 113, 0.10), transparent 55%),
+    linear-gradient(180deg, #1d2334 0%, #161b28 100%);
+  border-color: #2b3348; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+}
+.balance-cols { display: flex; justify-content: space-between; gap: 12px; }
+.balance-cols .derecha { text-align: right; }
+.balance-cifra { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-top: 4px; }
+.balance-barra { display: flex; height: 10px; border-radius: 99px; overflow: hidden; margin: 14px 0 8px; background: var(--tarjeta-2); gap: 3px; }
+.balance-barra i { display: block; height: 100%; }
+.b-activo { background: linear-gradient(90deg, #059669, #34d399); border-radius: 99px; width: 50%; }
+.b-pasivo { flex: 1; background: linear-gradient(90deg, #f87171, #b91c1c); border-radius: 99px; }
+.balance-pie { font-size: 13px; }
+.balance-pie strong { color: var(--texto); font-weight: 600; }
+
+.seccion { margin-top: 26px; }
+.seccion-cabeza {
+  display: flex; justify-content: space-between; align-items: center; padding: 0 4px 10px; border-bottom: 1px solid;
+}
+.seccion-activo .seccion-cabeza { border-image: linear-gradient(90deg, rgba(52, 211, 153, 0.6), transparent) 1; }
+.seccion-pasivo .seccion-cabeza { border-image: linear-gradient(90deg, rgba(248, 113, 113, 0.6), transparent) 1; }
+.seccion-titulo { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.seccion-total { font-size: 18px; font-weight: 700; }
+.seccion-activo .seccion-total, .seccion-activo .monto { color: var(--verde); }
+.seccion-pasivo .seccion-total, .seccion-pasivo .monto { color: var(--rojo); }
+.seccion .lista { position: relative; }
+.seccion .lista::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; z-index: 1; }
+.seccion-activo .lista::before { background: linear-gradient(180deg, #34d399, #059669); }
+.seccion-pasivo .lista::before { background: linear-gradient(180deg, #f87171, #b91c1c); }
+.seccion-activo .lista { background: linear-gradient(90deg, rgba(52, 211, 153, 0.05), transparent 40%), var(--tarjeta); }
+.seccion-pasivo .lista { background: linear-gradient(90deg, rgba(248, 113, 113, 0.05), transparent 40%), var(--tarjeta); }

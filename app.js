@@ -156,7 +156,7 @@
       necesitaHttps: "Abre esta app desde una dirección segura (https) en Safari.",
     },
   };
-  const VERSION_APP = "1.6";
+  const VERSION_APP = "1.7";
   let idioma = (() => {
     try {
       return localStorage.getItem("idioma") === "es" ? "es" : "en";
@@ -879,33 +879,58 @@
   // ── Cuentas
   function pintarCuentas() {
     const base = datos.ajustes.monedaBase;
-    const grupos = Object.keys(TIPOS)
-      .map((tipo) => ({ tipo, cuentas: datos.cuentas.filter((c) => c.tipo === tipo) }))
-      .filter((g) => g.cuentas.length);
+    const tot = totales();
+    const valorBase = (c) => convertir(valorActual(c), c.moneda, base);
+    const grupos = (clase) =>
+      Object.keys(TIPOS)
+        .filter((tipo) => TIPOS[tipo].clase === clase)
+        .map((tipo) => ({ tipo, cuentas: datos.cuentas.filter((c) => c.tipo === tipo) }))
+        .filter((g) => g.cuentas.length);
+
+    const item = (c) => {
+      const ult = [...c.valores].sort((a, b) => a.fecha.localeCompare(b.fecha)).at(-1);
+      return `<button class="item" data-id="${esc(c.id)}"><div class="fila"><span class="nombre">${esc(c.nombre)}</span><span class="num monto">${dinero(valorActual(c), c.moneda)}</span></div>
+        <div class="fila tenue"><span>${ult ? esc(t("actualizado", { f: fechaCorta(ult.fecha) })) : t("sinValor")}</span><span>${c.moneda !== base ? "≈ " + dinero(valorBase(c), base) : ""}</span></div></button>`;
+    };
+    const seccion = (clase, titulo, total) => {
+      const gs = grupos(clase);
+      if (!gs.length) return "";
+      return `<section class="seccion seccion-${clase}">
+        <div class="seccion-cabeza"><span class="seccion-titulo"><i class="punto"></i>${titulo}</span><span class="seccion-total num">${dinero(total, base)}</span></div>
+        ${gs
+          .map((g) => {
+            const total = g.cuentas.reduce((s, c) => s + valorBase(c), 0);
+            return `<div class="grupo-titulo"><span class="etiqueta">${esc(nombreTipo(g.tipo))}</span><span class="tenue num">${dinero(total, base)}</span></div>
+              <div class="lista">${g.cuentas.sort((a, b) => valorBase(b) - valorBase(a)).map(item).join("")}</div>`;
+          })
+          .join("")}
+      </section>`;
+    };
+    const suma = tot.activos + tot.pasivos;
+    const pctActivos = suma > 0 ? (tot.activos / suma) * 100 : 50;
+
     $("#app").innerHTML = `
       ${cabeza(t("cuentas"))}
-      <div class="contenedor">
+      <div class="contenedor con-flotante">
         ${
-          grupos.length
-            ? grupos
-                .map((g) => {
-                  const total = g.cuentas.reduce((s, c) => s + convertir(valorActual(c), c.moneda, base), 0);
-                  return `<div class="grupo-titulo"><span class="etiqueta">${esc(nombreTipo(g.tipo))}</span><span class="tenue num">${dinero(total, base)}</span></div>
-                <div class="lista">${g.cuentas
-                  .sort((a, b) => convertir(valorActual(b), b.moneda, base) - convertir(valorActual(a), a.moneda, base))
-                  .map((c) => {
-                    const ult = [...c.valores].sort((a, b) => a.fecha.localeCompare(b.fecha)).at(-1);
-                    return `<button class="item" data-id="${esc(c.id)}"><div class="fila"><span class="nombre">${esc(c.nombre)}</span><span class="num">${dinero(valorActual(c), c.moneda)}</span></div>
-                      <div class="fila tenue"><span>${ult ? esc(t("actualizado", { f: fechaCorta(ult.fecha) })) : t("sinValor")}</span><span>${c.moneda !== base ? "≈ " + dinero(convertir(valorActual(c), c.moneda, base), base) : ""}</span></div></button>`;
-                  })
-                  .join("")}</div>`;
-                })
-                .join("")
+          datos.cuentas.length
+            ? `<div class="tarjeta balance">
+                <div class="balance-cols">
+                  <div><div class="etiqueta"><i class="punto punto-activo"></i>${t("activos")}</div><div class="balance-cifra sube num">${dinero(tot.activos, base)}</div></div>
+                  <div class="derecha"><div class="etiqueta">${t("deudas")}<i class="punto punto-pasivo"></i></div><div class="balance-cifra baja num">${dinero(tot.pasivos, base)}</div></div>
+                </div>
+                <div class="balance-barra"><i class="b-activo" data-ancho="${pctActivos.toFixed(2)}"></i><i class="b-pasivo"></i></div>
+                <div class="fila tenue balance-pie"><span>${pctActivos.toFixed(0)}%</span><span>${t("patrimonioNeto")}: <strong class="num">${dinero(tot.neto, base)}</strong></span><span>${(100 - pctActivos).toFixed(0)}%</span></div>
+              </div>
+              ${seccion("activo", t("activos"), tot.activos)}
+              ${seccion("pasivo", t("deudas"), tot.pasivos)}`
             : `<div class="vacio">${t("cuentasVacio")}</div>`
         }
       </div>`;
+    const b = $(".b-activo");
+    if (b) b.style.width = `${b.dataset.ancho}%`;
     conectarCandado();
-    $$(".item").forEach((b) => (b.onclick = () => hojaDetalle(b.dataset.id)));
+    $$(".item").forEach((x) => (x.onclick = () => hojaDetalle(x.dataset.id)));
     const f = document.createElement("button");
     f.className = "flotante";
     f.setAttribute("aria-label", t("agregarCuenta"));
